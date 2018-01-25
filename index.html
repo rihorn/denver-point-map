@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Lab 09 Solution</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: whitesmoke;
+            font-family: Lato, sans-serif;
+            color: #0D0000;
+        }
+
+        header {
+            padding: 6px 10%;
+        }
+
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: #001323;
+        }
+
+        h2 {
+            display: inline-block;
+            color: #001323;
+        }
+
+        #map {
+            width: 80%;
+            height: 540px;
+            margin: 10px auto;
+        }
+
+        footer {
+            padding: 6px 10%;
+            width: 80%;
+        }
+
+        p {
+            font-size: 1em;
+            color: #001323;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <!-- add appropriate title -->
+        <h1>Firestations, Food Stores, and After School Programs</h1>
+        <h2>Denver, CO</h2>
+    </header>
+
+    <div id='map'></div>
+
+    <footer>
+        <!-- create appropriate description and instruction of map -->
+        <p><u>Map authored by Ian Horn</u></p>
+        <p>This map shows the distribution of firestations, after school programs, and food stores (or groceries) in Denver, Colorado. Without much knowledge of the city, one can infer the distribution of populated locations and major route systems.</p>
+        <p><u> Map Features</u> </p>
+        <p>The map features a layer control box where the user may toggle layers on/off. In addition, when scrolling over the map, a highlighted location with contain a pop-up feature with location information. In addition, users my click on a location in
+            the map and locations greater than 1 km will become 90% transparent.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="data/denver-fire-stations.js"></script>
+    <script src="data/after-school-programs.js"></script>
+    <script src="data/denver-food-stores.js"></script>
+    <script>
+        var map = L.map('map', {
+            center: [39.7256, -104.9252],
+            zoom: 11,
+        });
+        // change basemap - for fun
+        var tiles = L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            attribution: 'Imagery from <a href="http://giscience.uni-hd.de/">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        var commonStyles = {
+            weight: 1,
+            stroke: 0,
+            fillOpacity: 1
+        }
+
+        // convert GeoJSON 'stores' to geoJson 'stores'
+        var stores = L.geoJson(stores, {
+            pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, commonStyles);
+            },
+            style: function(feature) {
+                return {
+                    color: '#2faf18',
+                    fillColor: '#2faf18',
+                    weight: 1,
+                    stroke: 0,
+                    fillOpacity: 1,
+                    radius: 10
+                }
+            },
+            onEachFeature: function(feature, layer) { //create mouseover affordance
+                layer.on('mouseover', function() {
+                    layer.setStyle({
+                        fillColor: 'yellow'
+                    });
+                });
+                layer.on('mouseout', function() {
+                    layer.setStyle({
+                        fillColor: '#2faf18'
+                    });
+                });
+                // add text for popup
+                var tooltipString = '<b><u><center>' + "Grocery</u>:" + '</b>' +
+                    '<br>' + feature.properties.STORE_NAME + '</br>';
+                layer.bindTooltip(tooltipString);
+            }
+
+        }).addTo(map)
+
+        // convert GeoJSON 'program' to geoJson 'program'
+        var program = L.geoJson(programs, {
+            pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, commonStyles);
+            },
+            style: function(feature) {
+                return {
+                    color: '#c120ac',
+                    fillColor: '#c120ac',
+                    weight: 1,
+                    stroke: 0,
+                    fillOpacity: 1,
+                    radius: 10
+                }
+            },
+            onEachFeature: function(feature, layer) { //create mouseover affordance
+                layer.on('mouseover', function() {
+                    layer.setStyle({
+                        fillColor: 'yellow'
+                    });
+                });
+                layer.on('mouseout', function() {
+                    layer.setStyle({
+                        fillColor: '#c120ac'
+                    });
+                });
+                // add text for popup
+                var tooltipString = '<b><u><center>' + "After School Program:" + '</b></u>' + '<br>' +
+                    feature.properties.ORGANIZATI + '</br>';
+                layer.bindTooltip(tooltipString);
+            }
+        }).addTo(map)
+
+        // convert GeoJSON stations to geoJson 'firestations'
+        var fireStations = L.geoJson(stations, {
+            pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, commonStyles);
+            },
+            style: function(feature) {
+                return {
+                    color: '#ef0c07',
+                    fillColor: '#ef0c07',
+                    weight: 1,
+                    stroke: 0,
+                    fillOpacity: 1,
+                    radius: 10
+                }
+            },
+
+            onEachFeature: function(feature, layer) { //create mouseover affordance
+                layer.on('mouseover', function() {
+                    layer.setStyle({
+                        fillColor: 'yellow'
+                    });
+                });
+                layer.on('mouseout', function() {
+                    layer.setStyle({
+                        fillColor: '#ef0c07'
+                    });
+                });
+
+                // add text to popup
+                var tooltipString = '<b><u><center>' + "Firestation #</u>:" + '</b>' + '<br>' +
+                    feature.properties.STATION_NU + '</br>';
+                layer.bindTooltip(tooltipString);
+
+            }
+        }).addTo(map)
+
+        //fuunction to create click events
+        map.on('click', function(e) {
+            fireStations.eachLayer(function(layer) {
+                var distance = e.latlng.distanceTo(layer.getLatLng()) / 1000; // distance as km
+
+                if (distance > 1) {
+                    layer.setStyle({
+                        fillOpacity: .25 // increase opacity because
+                                         // difficult to see at such
+                                         //low opacity
+                    });
+                } else {
+                    layer.setStyle({
+                        fillOpacity: 1
+                    });
+                }
+            });
+
+            // change opacity of circles greater than 1 km for each geoJson
+            stores.eachLayer(function(layer) {
+                var distance = e.latlng.distanceTo(layer.getLatLng()) / 1000; // distance as km
+
+                if (distance > 1) {
+                    layer.setStyle({
+                        fillOpacity: .1
+                    });
+                } else {
+                    layer.setStyle({
+                        fillOpacity: 1
+                    });
+                }
+            });
+            program.eachLayer(function(layer) {
+                var distance = e.latlng.distanceTo(layer.getLatLng()) / 1000; // distance as km
+
+                if (distance > 1) {
+                    layer.setStyle({
+                        fillOpacity: .1
+                    });
+                } else {
+                    layer.setStyle({
+                        fillOpacity: 1
+                    });
+                }
+            });
+        });
+
+        //variable to create labes for L.control.layers
+        var sourcesLabels = {
+            "<b style = 'color:#ef0c07'>Fire Stations (FS)</b>": fireStations,
+            "<b style = 'color:#c120ac'>After School Programs</b>": program,
+            "<b style = 'color:#2faf18'>Grocery Locations</b>": stores
+        }
+
+        //add ability to toggle on/off layers
+        L.control.layers(null, sourcesLabels, {
+            collapsed: false
+        }).addTo(map);
+    </script>
+
+</body>
+
+</html>
